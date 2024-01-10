@@ -1,0 +1,23 @@
+auto_venv() {
+    builtin cd -P .
+    if [ -n "$VIRTUAL_ENV" ] && ! [[ $PWD =~ ^`dirname $VIRTUAL_ENV`.* ]]; then
+        deactivate
+    fi
+    pwd=$PWD
+    while [ "$pwd" != "$HOME" ] && [ "$pwd" != "/" ]; do
+        venv=`ls $pwd/{,.}*/bin/activate 2>/dev/null`
+        test -n "$venv" && source "$venv" && break
+        pwd=`dirname $pwd`
+    done
+}
+cd() {
+    builtin cd $1 && auto_venv
+}
+virtualenv() {
+    if [ -f ~/.pyenv/shims/virtualenv ]; then
+        ~/.pyenv/shims/virtualenv $1
+    else
+        $(brew --prefix)/bin/virtualenv $1
+    fi && auto_venv
+}
+which virtualenv > /dev/null && which auto_venv > /dev/null && auto_venv
